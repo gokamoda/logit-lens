@@ -1,0 +1,4 @@
+defaults:
+- _self_
+
+save_latest_dir: latest
