@@ -11,9 +11,11 @@ def visualize_layer_results_core(
 ):
     # Assume probs is of shape (LAYER, SEQUENCE, N)
     layers, sequences, top_k = probs.shape
-    assert len(inputs) == sequences
-    assert len(decoded) == layers
-    assert all(len(decoded[layer]) == sequences for layer in range(layers))
+    assert len(inputs) == sequences, f"{len(inputs)} != {sequences}"
+    assert len(decoded) == layers, f"{len(decoded)} != {layers}"
+    assert all(len(decoded[layer]) == sequences for layer in range(layers)), (
+        f"{decoded[0]} !?= {sequences}"
+    )
     assert all(
         len(decoded[layer][position]) == top_k
         for layer in range(layers)
