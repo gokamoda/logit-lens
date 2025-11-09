@@ -3,7 +3,7 @@ from typing import Any
 
 import torch
 
-from .hook import PostHook
+from .hook import PostLayerHookForHiddenStates
 from .typing import BATCH, HIDDEN_DIM, LAYER, SEQUENCE, Tensor
 
 
@@ -46,7 +46,7 @@ class LogitLens:
 
     model: Any
     post_layer: bool
-    post_layer_hooks: list[PostHook]
+    post_layer_hooks: list[PostLayerHookForHiddenStates]
 
     def __init__(self, model, post_layer: bool = True, topn: int = 5):
         self.model = model
@@ -67,7 +67,7 @@ class LogitLens:
     def __enter__(self):
         if self.post_layer:
             for module in self.model.model.layers:
-                self.post_layer_hooks.append(PostHook(module))
+                self.post_layer_hooks.append(PostLayerHookForHiddenStates(module))
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):

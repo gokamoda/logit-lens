@@ -21,7 +21,7 @@ def visualize_layer_results(
         probs=probs.cpu(),
         inputs=tokenizer.convert_ids_to_tokens(input_ids.cpu()),
         decoded=[
-            [[tokenizer.decode(k) for k in position] for position in layer]
+            [tokenizer.convert_ids_to_tokens(position) for position in layer]
             for layer in result.post_layer_token_ids.cpu()
         ],
         y_labels=None,
