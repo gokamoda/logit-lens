@@ -31,5 +31,5 @@ class PostAttnHookForHiddenStates(PostHook):
     def __init__(self, module: nn.Module):
         super().__init__(module)
         self.post_process_fn = POST_ATTN_HIDDEN_STATE_EXTRACTORS.get(
-            module.__class__.__name__, lambda x: x
+            module.__class__.__name__, lambda x: x[0]
         )
