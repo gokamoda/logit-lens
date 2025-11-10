@@ -17,7 +17,17 @@ def visualize_layer_results(
     probs = []
     if result.post_emb_probs is not None:
         probs.append(result.post_emb_probs.unsqueeze(0))
-    if result.post_layer_probs is not None:
+
+    if result.post_attn_probs is not None and result.post_layer_probs is not None:
+        # append both attn and layer probs, but one by one
+        for attn_prob, layer_prob in zip(
+            result.post_attn_probs, result.post_layer_probs
+        ):
+            probs.append(attn_prob.unsqueeze(0))
+            probs.append(layer_prob.unsqueeze(0))
+    elif result.post_attn_probs is not None:
+        probs.append(result.post_attn_probs)
+    elif result.post_layer_probs is not None:
         probs.append(result.post_layer_probs)
 
     decoded = []
@@ -28,7 +38,34 @@ def visualize_layer_results(
                 for position in result.post_emb_token_ids.cpu()
             ]
         )
-    if result.post_layer_token_ids is not None:
+    if (
+        result.post_attn_token_ids is not None
+        and result.post_layer_token_ids is not None
+    ):
+        # append both attn and layer token ids, but one by one
+        for attn_layer, layer_layer in zip(
+            result.post_attn_token_ids, result.post_layer_token_ids
+        ):
+            decoded.append(
+                [
+                    tokenizer.convert_ids_to_tokens(position)
+                    for position in attn_layer.cpu()
+                ]
+            )
+            decoded.append(
+                [
+                    tokenizer.convert_ids_to_tokens(position)
+                    for position in layer_layer.cpu()
+                ]
+            )
+    elif result.post_attn_token_ids is not None:
+        decoded.extend(
+            [
+                [tokenizer.convert_ids_to_tokens(position) for position in layer]
+                for layer in result.post_attn_token_ids.cpu()
+            ]
+        )
+    elif result.post_layer_token_ids is not None:
         decoded.extend(
             [
                 [tokenizer.convert_ids_to_tokens(position) for position in layer]
@@ -39,7 +76,16 @@ def visualize_layer_results(
     y_labels = []
     if result.post_emb_token_ids is not None:
         y_labels.append("emb.")
-    if result.post_layer_token_ids is not None:
+    if (
+        result.post_attn_token_ids is not None
+        and result.post_layer_token_ids is not None
+    ):
+        for i in range(len(result.post_attn_token_ids)):
+            y_labels.append(f"attn {i}")
+            y_labels.append(f"layer {i}")
+    elif result.post_attn_token_ids is not None:
+        y_labels.extend([f"attn {i}" for i in range(len(result.post_attn_token_ids))])
+    elif result.post_layer_token_ids is not None:
         y_labels.extend([f"layer {i}" for i in range(len(result.post_layer_token_ids))])
 
     # Get the logits and other relevant information from the resul
@@ -69,7 +115,7 @@ def main():
     # Generate text
     with (
         torch.no_grad(),
-        LogitLens(model, post_emb=True, post_layer=True, topn=5) as ll,
+        LogitLens(model, post_emb=True, post_attn=True, post_layer=True, topn=5) as ll,
     ):
         model(**inputs)
         ll_result = ll.get_results()

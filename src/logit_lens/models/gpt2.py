@@ -12,3 +12,7 @@ GPT2LMHEADMODEL_ALIAS = [
 
 def extract_gpt2_hidden_states(layer_output: tuple) -> torch.Tensor:
     return layer_output[0]
+
+
+def extract_gpt2_post_attn_hidden_states(layer_output: tuple) -> torch.Tensor:
+    return layer_output[0]
